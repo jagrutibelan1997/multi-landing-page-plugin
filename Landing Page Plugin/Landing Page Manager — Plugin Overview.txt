@@ -1,0 +1,52 @@
+Landing Page Manager — Plugin Overview
+Version: 3.1.0 | Author: Jagruti Belan | Requires: WordPress 6.0+, PHP 8.0+
+
+What It Does
+Replaces your WordPress homepage with a fully editable, high-converting landing page. On activation, it overrides the front page setting and serves one of four professionally designed templates directly.
+
+Plugin File Structure
+4 Landing Page Variants
+Variant	Business Type
+yoga	Yoga / Wellness Studio
+construction	Construction / Trades
+hospital	Medical / Healthcare
+jewellery	Retail / Jewellery
+Switch between them at Landing Page → Settings — takes effect immediately.
+
+How It Works (Request Lifecycle)
+Activation — saves your original homepage settings, sets lpm_active = 1, creates the wp_lpm_leads database table.
+Front-end visit — template_redirect hook fires; if lpm_active and is_front_page(), it loads the correct templates/{variant}.php and exits (bypassing WordPress's normal template system entirely).
+Assets — wp_enqueue_scripts loads Google Fonts (Inter), a shared base.css, a per-variant CSS file, and main.js (mobile nav, scroll effects).
+Deactivation — restores your original homepage settings. Data is preserved.
+Uninstall (delete) — all options, leads, and the DB table are wiped clean.
+Admin Dashboard Pages
+Menu Item	Purpose
+Dashboard	Overview — active variant, new lead count
+Settings	Choose active variant (yoga / construction / hospital / jewellery)
+Leads	View, filter, mark-read, and delete contact form submissions
+Yoga / Construction / Hospital / Jewellery	Edit all content for each variant (hero text, images, contact details, logo)
+Inactive template menu items are automatically dimmed (opacity 0.3, non-clickable) so you always know which variant is live.
+
+Content Editable Per Variant
+Logo (upload via Media Library or URL) + custom display name
+Navigation links
+Hero section: eyebrow, headline, subheading, CTA buttons, background image
+About section: heading, body text, image, stats
+Benefits/features cards
+Services/classes sections
+Testimonials
+Contact details (phone, email, address)
+Contact Form & Leads
+Every template has a built-in contact form. Submissions are:
+
+Validated (name, valid email, message required)
+Protected by WordPress nonce, honeypot field, and IP-based rate limiting (1 per 60 sec)
+Saved to wp_lpm_leads table with fields: name, email, phone, message, variant, status (new/read), created_at
+Scoped to the active variant — switching templates only shows relevant leads
+Trigger an email notification to the WordPress admin email on each new submission
+Key Technical Patterns
+template_redirect — full template override, no WordPress loop needed
+admin_post_* actions — all form saves (content + leads management) go through admin-post.php
+dbDelta() — safe DB table creation/upgrade on activation and admin_init
+Singleton admin class (LPM_Admin::init()) — registers all hooks in one place
+Dynamic CSS — inline sidebar styles generated server-side to dim inactive menus
